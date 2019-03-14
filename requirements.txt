@@ -1,0 +1,7 @@
+flake8===3.7.7
+Flask==1.0.2
+Flask-SQLAlchemy==2.3.2
+flask-migrate==2.4.0
+Flask-Testing==0.7.1
+gunicorn==19.9.0
+psycopg2==2.7.7
