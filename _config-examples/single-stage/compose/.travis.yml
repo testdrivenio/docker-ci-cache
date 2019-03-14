@@ -1,0 +1,30 @@
+# _config-examples/single-stage/compose/.travis.yml
+
+sudo: required
+
+services:
+  - docker
+
+env:
+  global:
+    DOCKER_COMPOSE_VERSION: 1.23.2
+    CACHE_IMAGE: mjhea0/docker-ci-cache
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+before_script:
+  - docker pull $CACHE_IMAGE:latest || true
+
+script:
+  - docker-compose build
+  - docker-compose up -d
+  - docker-compose exec web flake8
+  - docker-compose exec web python manage.py test
+
+after_success:
+  - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+  - docker push $CACHE_IMAGE:latest

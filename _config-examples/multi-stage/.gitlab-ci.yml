@@ -1,0 +1,34 @@
+# _config-examples/multi-stage/.gitlab-ci.yml
+
+image: docker:stable
+services:
+  - docker:dind
+
+variables:
+  # use the overlay storage driver
+  # https://docs.gitlab.com/ce/ci/docker/using_docker_build.html#using-the-overlayfs-driver
+  DOCKER_DRIVER: overlay
+  CACHE_IMAGE: mjhea0/docker-ci-cache
+
+stages:
+  - build
+
+docker-build:
+  stage: build
+  script:
+    - docker pull $CACHE_IMAGE:base || true
+    - docker pull $CACHE_IMAGE:stage || true
+    - docker build
+        --target base
+        --cache-from $CACHE_IMAGE:base
+        --tag $CACHE_IMAGE:base
+        --file ./Dockerfile.multi
+        "."
+    - docker build
+        --cache-from $CACHE_IMAGE:stage
+        --tag $CACHE_IMAGE:stage
+        --file ./Dockerfile.multi
+        "."
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+    - docker push $CACHE_IMAGE:base
+    - docker push $CACHE_IMAGE:stage

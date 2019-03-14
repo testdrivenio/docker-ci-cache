@@ -1,0 +1,32 @@
+# _config-examples/multi-stage/.travis.yml
+
+sudo: required
+
+services:
+  - docker
+
+env:
+  global:
+    CACHE_IMAGE: mjhea0/docker-ci-cache
+
+before_script:
+  - docker pull $CACHE_IMAGE:base || true
+  - docker pull $CACHE_IMAGE:latest || true
+
+script:
+  - docker build
+      --target base
+      --cache-from $CACHE_IMAGE:base
+      --tag $CACHE_IMAGE:base
+      --file ./Dockerfile.multi
+      "."
+  - docker build
+      --cache-from $CACHE_IMAGE:latest
+      --tag $CACHE_IMAGE:latest
+      --file ./Dockerfile.multi
+      "."
+
+after_success:
+  - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+  - docker push $CACHE_IMAGE:base
+  - docker push $CACHE_IMAGE:latest

@@ -1,0 +1,53 @@
+# _config-examples/multi-stage/circle.yml
+
+version: 2
+
+jobs:
+  job1:
+    docker:
+      - image: docker:stable
+    environment:
+      CACHE_IMAGE: mjhea0/docker-ci-cache
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Pull base image from docker hub
+          command: docker pull $CACHE_IMAGE:base || true
+      - run:
+          name: Pull stage image from docker hub
+          command: docker pull $CACHE_IMAGE:stage || true
+      - run:
+          name: Build base from dockerfile
+          command: |
+            docker build \
+              --target base \
+              --cache-from $CACHE_IMAGE:base \
+              --tag $CACHE_IMAGE:base \
+              --file ./Dockerfile.multi \
+              "."
+      - run:
+          name: Build stage from dockerfile
+          command: |
+            docker build \
+              --cache-from $CACHE_IMAGE:stage \
+              --tag $CACHE_IMAGE:stage \
+              --file ./Dockerfile.multi \
+              "."
+      - run:
+          name: Log in to docker hub
+          command: docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run:
+          name: Push base image to docker hub
+          command: docker push $CACHE_IMAGE:base
+      - run:
+          name: Push stage image to docker hub
+          command: docker push $CACHE_IMAGE:stage
+
+
+workflows:
+  version: 2
+
+  tests_to_run:
+    jobs:
+    - job1
