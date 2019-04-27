@@ -1,4 +1,4 @@
-# _config-examples/multi-stage/compose/.travis.yml
+# .travis.yml
 
 sudo: required
 
@@ -7,32 +7,14 @@ services:
 
 env:
   global:
-    DOCKER_COMPOSE_VERSION: 1.23.2
     CACHE_IMAGE: mjhea0/docker-ci-cache
 
-before_install:
-  - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
-
 before_script:
-  - docker pull $CACHE_IMAGE:base || true
-  - docker pull $CACHE_IMAGE:stage || true
+  - docker pull $CACHE_IMAGE:latest || true
 
 script:
-  - docker build
-      --target base
-      --cache-from $CACHE_IMAGE:base
-      --tag $CACHE_IMAGE:base
-      --file ./Dockerfile.multi
-      "."
-  - docker-compose -f docker-compose.multi.yml build
-  - docker-compose -f docker-compose.multi.yml up -d
-  - docker-compose -f docker-compose.multi.yml exec web flake8
-  - docker-compose -f docker-compose.multi.yml exec web python manage.py test
+  - docker build --cache-from $CACHE_IMAGE:latest --tag $CACHE_IMAGE:latest .
 
 after_success:
   - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
-  - docker push $CACHE_IMAGE:base
-  - docker push $CACHE_IMAGE:stage
+  - docker push $CACHE_IMAGE:latest

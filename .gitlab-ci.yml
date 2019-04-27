@@ -1,4 +1,4 @@
-# _config-examples/multi-stage/compose/.gitlab-ci.yml
+# .gitlab-ci.yml
 
 image: docker:stable
 services:
@@ -15,20 +15,8 @@ stages:
 
 docker-build:
   stage: build
-  before_script:
-    - apk add --no-cache py-pip python-dev libffi-dev openssl-dev gcc libc-dev make
-    - pip install docker-compose
   script:
-    - docker pull $CACHE_IMAGE:base || true
-    - docker pull $CACHE_IMAGE:stage || true
-    - docker build
-        --target base
-        --cache-from $CACHE_IMAGE:base
-        --tag $CACHE_IMAGE:base
-        --file ./Dockerfile.multi
-        "."
-    - docker-compose -f docker-compose.multi.yml build
-    - docker-compose -f docker-compose.multi.yml up -d
+    - docker pull $CACHE_IMAGE:latest || true
+    - docker build --cache-from $CACHE_IMAGE:latest --tag $CACHE_IMAGE:latest .
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
-    - docker push $CACHE_IMAGE:base
-    - docker push $CACHE_IMAGE:stage
+    - docker push $CACHE_IMAGE:latest
