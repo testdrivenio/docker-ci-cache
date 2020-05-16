@@ -1,43 +1,23 @@
 # _config-examples/single-stage/compose/circle.yml
 
-version: 2
+version: 2.1
 
 jobs:
-  job1:
-    docker:
-      - image: docker/compose:1.23.2
+  build:
+    machine:
+      image: ubuntu-1604:202004-01
     environment:
       CACHE_IMAGE: mjhea0/docker-ci-cache
-
+      DOCKER_BUILDKIT: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1
     steps:
       - checkout
-      - setup_remote_docker
-      - run:
-          name: Pull image from docker hub
-          command: docker pull $CACHE_IMAGE:latest || true
-      - run:
-          name: Build Docker images
-          command: docker-compose build
-      - run:
-          name: Spin up containers
-          command: docker-compose up -d
-      - run:
-          name: Run flake8
-          command: docker-compose exec web flake8
-      - run:
-          name: Run tests
-          command: docker-compose exec web python manage.py test
       - run:
           name: Log in to docker hub
           command: docker login -u $REGISTRY_USER -p $REGISTRY_PASS
       - run:
+          name: Build images
+          command: docker-compose build --build-arg BUILDKIT_INLINE_CACHE=1
+      - run:
           name: Push to docker hub
           command: docker push $CACHE_IMAGE:latest
-
-
-workflows:
-  version: 2
-
-  tests_to_run:
-    jobs:
-    - job1

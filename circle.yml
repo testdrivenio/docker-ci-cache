@@ -1,33 +1,25 @@
-# circle.yml
-
-version: 2
+version: 2.1
 
 jobs:
-  job1:
-    docker:
-      - image: docker:stable
+  build:
+    machine:
+      image: ubuntu-1604:202004-01
     environment:
       CACHE_IMAGE: mjhea0/docker-ci-cache
+      DOCKER_BUILDKIT: 1
     steps:
       - checkout
-      - setup_remote_docker
-      - run:
-          name: Pull image from docker hub
-          command: docker pull $CACHE_IMAGE:latest || true
-      - run:
-          name: Build from dockerfile
-          command: docker build --cache-from $CACHE_IMAGE:latest --tag $CACHE_IMAGE:latest .
       - run:
           name: Log in to docker hub
           command: docker login -u $REGISTRY_USER -p $REGISTRY_PASS
       - run:
+          name: Build from dockerfile
+          command: |
+            docker build \
+              --cache-from $CACHE_IMAGE:latest \
+              --tag $CACHE_IMAGE:latest \
+              --build-arg BUILDKIT_INLINE_CACHE=1 \
+              "."
+      - run:
           name: Push to docker hub
           command: docker push $CACHE_IMAGE:latest
-
-
-workflows:
-  version: 2
-
-  tests_to_run:
-    jobs:
-    - job1

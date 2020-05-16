@@ -1,22 +1,25 @@
-# .gitlab-ci.yml
-
 image: docker:stable
 services:
   - docker:dind
 
 variables:
-  # use the overlay storage driver
-  # https://docs.gitlab.com/ce/ci/docker/using_docker_build.html#using-the-overlayfs-driver
-  DOCKER_DRIVER: overlay
+  DOCKER_DRIVER: overlay2
   CACHE_IMAGE: mjhea0/docker-ci-cache
+  DOCKER_BUILDKIT: 1
 
 stages:
   - build
 
 docker-build:
   stage: build
-  script:
-    - docker pull $CACHE_IMAGE:latest || true
-    - docker build --cache-from $CACHE_IMAGE:latest --tag $CACHE_IMAGE:latest .
+  before_script:
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+  script:
+    - docker build
+        --cache-from $CACHE_IMAGE:latest
+        --tag $CACHE_IMAGE:latest
+        --file ./Dockerfile
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        "."
+  after_script:
     - docker push $CACHE_IMAGE:latest

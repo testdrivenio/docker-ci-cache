@@ -1,0 +1,26 @@
+name: Docker Build
+
+on: [push]
+
+env:
+  CACHE_IMAGE: mjhea0/docker-ci-cache
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v1
+      - name: Log in to docker hub
+        run: docker login -u ${{ secrets.REGISTRY_USER }} -p ${{ secrets.REGISTRY_PASS }}
+      - name: Build from dockerfile
+        run: |
+          docker build \
+            --cache-from $CACHE_IMAGE:latest \
+            --tag $CACHE_IMAGE:latest \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            "."
+      - name: Push to docker hub
+        run: docker push $CACHE_IMAGE:latest
