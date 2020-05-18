@@ -17,8 +17,6 @@ docker-build:
   stage: build
   before_script:
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
-    - docker pull $CACHE_IMAGE:base || true
-    - docker pull $CACHE_IMAGE:stage || true
   script:
     - docker build
         --target base
