@@ -1,14 +1,14 @@
 # _config-examples/single-stage/compose/.gitlab-ci.yml
 
-image: docker:stable
+image: docker/compose:latest
 services:
   - docker:dind
 
 variables:
-  # use the overlay storage driver
-  # https://docs.gitlab.com/ce/ci/docker/using_docker_build.html#using-the-overlayfs-driver
-  DOCKER_DRIVER: overlay
+  DOCKER_DRIVER: overlay2
   CACHE_IMAGE: mjhea0/docker-ci-cache
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
 
 stages:
   - build
@@ -16,11 +16,8 @@ stages:
 docker-build:
   stage: build
   before_script:
-    - apk add --no-cache py-pip python-dev libffi-dev openssl-dev gcc libc-dev make
-    - pip install docker-compose
-  script:
-    - docker pull $CACHE_IMAGE:latest || true
-    - docker-compose build
-    - docker-compose up -d
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+  script:
+    - docker-compose build --build-arg BUILDKIT_INLINE_CACHE=1
+  after_script:
     - docker push $CACHE_IMAGE:latest
