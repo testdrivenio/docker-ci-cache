@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.8'
 
 services:
 
@@ -13,8 +13,8 @@ services:
     environment:
       - FLASK_DEBUG=1
       - APP_SETTINGS=project.config.DevelopmentConfig
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/users
-      - DATABASE_TEST_URL=postgres://postgres:postgres@db:5432/users_test
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/users
+      - DATABASE_TEST_URL=postgresql://postgres:postgres@db:5432/users_test
     depends_on:
       - db
 
