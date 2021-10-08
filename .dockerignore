@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+.gitlab-ci.yml
+Dockerfile
+Dockerfile.multi
+README.md
+_config-examples
+circle.yml
+docker-compose.multi.yml
+docker-compose.yml
