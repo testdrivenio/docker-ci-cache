@@ -32,5 +32,5 @@ docker-build:
         --file ./Dockerfile.multi
         --build-arg BUILDKIT_INLINE_CACHE=1
         "."
-  after_script:
-    - docker push $CACHE_IMAGE:latest
+    - docker push $CACHE_IMAGE:base
+    - docker push $CACHE_IMAGE:stage
