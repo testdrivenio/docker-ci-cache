@@ -1,9 +1,9 @@
 # pull base image
-FROM python:3.9.7-slim
+FROM python:3.12.2-slim
 
 # install netcat
 RUN apt-get update && \
-    apt-get -y install netcat && \
+    apt-get -y install netcat-traditional && \
     apt-get clean
 
 # set working directory

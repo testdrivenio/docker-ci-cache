@@ -1,12 +1,12 @@
 # base
-FROM python:3.9.7 as base
+FROM python:3.12.2 as base
 COPY ./requirements.txt /
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
 
 # stage
-FROM python:3.9.7-slim
+FROM python:3.12.2-slim
 RUN apt-get update && \
-    apt-get -y install netcat && \
+    apt-get -y install netcat-traditional && \
     apt-get clean
 WORKDIR /usr/src/app
 COPY --from=base /wheels /wheels
